@@ -70,6 +70,6 @@ plt.xscale('log')
 plt.errorbar(bin_sizes, var_ave/var_ave[0], yerr=var_std/var_ave[0], fmt='o-', color='r', label='Average')
 n_plots = 2
 for plot_i in range(n_plots):
-    plt.plot(bin_sizes, variances[plot_i]/variances[plot_i,0], 'x-', label='Sample '+str(plot_i))
+    plt.plot(bin_sizes, variances[plot_i]/variances[plot_i,0], 'x-', label='Simulation '+str(plot_i))
 plt.legend(loc=2)
 plt.show()
