@@ -2,7 +2,6 @@ import sys
 import numpy as np
 import scipy.sparse.csgraph as csg
 import matplotlib.pyplot as plt
-sys.path.append('.')
 from bootstrapping import bootstrapping
 
 class IsingSwendsenWang:
@@ -31,8 +30,8 @@ class IsingSwendsenWang:
                 if self._bond(self.spins[i, j], self.spins[i, (j+1)%self.L]):
                     graph[i*self.L+j, i*self.L+(j+1)%self.L] = 1 
 
-        # Identify clusters using connected components
-        _, labels = csg.connected_components(graph, directed=False)
+        # Union find
+        n_components, labels = csg.connected_components(graph, directed=False)
 
         # Flip each cluster with 50% probability
         for cluster in np.unique(labels):
@@ -44,6 +43,9 @@ class IsingSwendsenWang:
         ms, m2s, m4s, m_abss, es, e2s, sfs, sf1s = [], [], [], [], [], [], [], []
         m, m2, m4, m_abs, e, e2, sf, sf1 = 0, 0, 0, 0, 0, 0, 0, 0        
         bin_size = steps // 2 // n_bins
+        if bin_size == 0:
+            bin_size = 1
+
         n_samp = 0
         for t in range(steps):
             # Update
@@ -63,6 +65,7 @@ class IsingSwendsenWang:
                 sf1 += _sf1
                 n_samp += 1
                 if n_samp == bin_size:
+                    # Store the average for each bin
                     ms.append(m/bin_size)
                     m2s.append(m2/bin_size)
                     m4s.append(m4/bin_size)
@@ -120,8 +123,6 @@ class IsingSwendsenWang:
         correlation_length_Ls = np.array(correlation_length_Ls)
         return energies, specific_heats, susceptibilities, Binder_cumulants, correlation_length_Ls
 
-    # Include other methods (swendsen_wang_step, simulate, calculate_energy, calculate_magnetization) here...
-
     def calculate_energy(self):
         # Calculate the energy of the current state.
         energy = 0
@@ -167,9 +168,9 @@ class IsingSwendsenWang:
     
     def calculate_binder(self, m2, m4):
         mu, sigma = bootstrapping(m2, m4, self.n_boot, self.f_binder)
-        mu = 3/2 * (mu - 1/3)
-        sigma *= 3/2
-        return mu, sigma
+        mu -= 1/3
+        factor = 3/2
+        return np.array([mu, sigma]) * factor
 
     def calculate_correlation_length_L(self, Sq0, Sq1):
         mu, sigma = bootstrapping(Sq0, Sq1, self.n_boot, self.f_xi_L)
@@ -183,7 +184,7 @@ Tc = 2 / np.log(1 + np.sqrt(2))  # Critical temperature
 n_Ts = 16
 Tmin = 0.75 * Tc
 Tmax = 1.25 * Tc
-steps_per_temp = 2**12  # Number of Monte Carlo steps per temperature
+steps_per_temp = 2**11  # Number of Monte Carlo steps per temperature
 
 # Results
 energies = []
@@ -206,14 +207,14 @@ susceptibilities = np.array(susceptibilities)
 Binder_cumulants = np.array(Binder_cumulants)
 correlation_length_Ls = np.array(correlation_length_Ls)
 
-# Plotting results
+# Plot results
 plt.figure(figsize=(10, 8))
 
 def plot_data(df):
     for i,L in enumerate(Ls):
         plt.errorbar(df[i,:,0], df[i,:,1], yerr=df[i,:,2], fmt='o-', label=r'$L=$'+str(L))
     plt.legend()
-    
+
 plt.subplot(2, 2, 1)
 plt.xlabel('Temperature')
 plt.ylabel('Specific heat')
@@ -235,4 +236,4 @@ plt.ylabel('Correlation length / L')
 plot_data(correlation_length_Ls)
 
 plt.tight_layout()
-plt.show()
+# plt.show()
