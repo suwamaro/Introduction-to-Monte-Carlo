@@ -2,7 +2,13 @@ import sys
 import numpy as np
 import scipy.sparse.csgraph as csg
 import matplotlib.pyplot as plt
+
 from bootstrapping import bootstrapping
+# try:
+#     from bootstrapping import bootstrapping
+# except ImportError:
+#     !wget https://raw.githubusercontent.com/suwamaro/Introduction-to-Monte-Carlo/main/exercise/bootstrapping.py    
+#     from bootstrapping import bootstrapping
 
 class IsingSwendsenWang:
     def __init__(self, L):
@@ -11,7 +17,7 @@ class IsingSwendsenWang:
         self.spins = np.random.choice([-1, 1], size=(L, L))
         self.J = 1  # Interaction strength
         self.q1 = [2 * np.pi / self.L, 0]  # Smallest nonzero wave vector
-        self.n_boot = 500  # Number of bootstrap samples
+        self.n_boot = 100  # Number of bootstrap samples
         self.T = 1.0
 
     def _bond(self, s1, s2):
@@ -178,7 +184,7 @@ class IsingSwendsenWang:
         return np.array([mu, sigma]) * factor
     
 # Simulation parameters
-Ls = [4, 8, 16]  # Lattice size
+Ls = [4, 8, 12]  # Lattice size
 n_bins = 32
 Tc = 2 / np.log(1 + np.sqrt(2))  # Critical temperature
 n_Ts = 16
@@ -186,7 +192,7 @@ Tmin = 0.75 * Tc
 Tmax = 1.25 * Tc
 steps_per_temp = 2**11  # Number of Monte Carlo steps per temperature
 
-# Results
+# Run
 energies = []
 specific_heats = []
 susceptibilities = []
@@ -200,7 +206,6 @@ for L in Ls:
     susceptibilities.append(chi)
     Binder_cumulants.append(U2)
     correlation_length_Ls.append(xi_L)
-
 energies = np.array(energies)
 specific_heats = np.array(specific_heats)
 susceptibilities = np.array(susceptibilities)
@@ -209,7 +214,6 @@ correlation_length_Ls = np.array(correlation_length_Ls)
 
 # Plot results
 plt.figure(figsize=(10, 8))
-
 def plot_data(df):
     for i,L in enumerate(Ls):
         plt.errorbar(df[i,:,0], df[i,:,1], yerr=df[i,:,2], fmt='o-', label=r'$L=$'+str(L))
@@ -219,21 +223,17 @@ plt.subplot(2, 2, 1)
 plt.xlabel('Temperature')
 plt.ylabel('Specific heat')
 plot_data(specific_heats)
-
 plt.subplot(2, 2, 2)
 plt.xlabel('Temperature')
 plt.ylabel('Susceptibility')
 plot_data(susceptibilities)
-
 plt.subplot(2, 2, 3)
 plt.xlabel('Temperature')
 plt.ylabel('Binder cumulant')
 plot_data(Binder_cumulants)
-
 plt.subplot(2, 2, 4)
 plt.xlabel('Temperature')
 plt.ylabel('Correlation length / L')
 plot_data(correlation_length_Ls)
-
 plt.tight_layout()
-# plt.show()
+plt.show()
