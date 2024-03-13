@@ -21,19 +21,21 @@ def bootstrapping(x,y,M,f,weight=None):
 
             X = x[R]
             Y = y[R]        
-            muX = np.average(X)
-            muY = np.average(Y)
-            val = f(muX, muY)
-            if val is not None:
-                vals[k] = val
-            else:
+            muX = np.mean(X)
+            muY = np.mean(Y)
+            try:
+                val = f(muX, muY)
+            except Exception as e:
+                print(f'An error occurred in resampling: {e}')                
                 fails.append(k)
+            else:
+                vals[k] = val
 
         # Deleting the failed resamples
         if len(fails) > 0:
             print('Number of failures =', len(fails))
         vals = np.delete(vals, fails, 0)    
-        muB = np.average(vals)
+        muB = np.mean(vals)
         sigmaB = np.std(vals)
         sigmaB *= np.sqrt(N/(N-1))  # An unbiased estimator
 
