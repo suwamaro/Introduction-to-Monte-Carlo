@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib.patches import Ellipse
+# from IPython.display import HTML
 
 # Parameters
 nuts = True
@@ -159,6 +160,7 @@ scatter = ax.scatter([], [], s=1)
 def init():
     line.set_data([], [])
     scatter.set_offsets(np.empty((0, 2)))
+    ax.grid(True)
     return line, scatter,
 
 # Update function for the animation that includes a line connecting the plots
@@ -173,9 +175,8 @@ ax.add_patch(ellipse)
 # Setting the aspect ratio to 'equal' so the ellipse isn't distorted
 ax.set_aspect('equal')
 
-# Display the plot
-plt.grid(True)
 # Create the animation
 ani = animation.FuncAnimation(fig, update_line, init_func=init, frames=steps, fargs=(samples, line, scatter), interval=20, blit=True)
 # ani.save('animation.gif', writer='imagemagick', fps=60)
 plt.show()
+# HTML(ani.to_html5_video())
